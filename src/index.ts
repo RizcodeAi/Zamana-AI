@@ -1,18 +1,59 @@
-import express, { Request, Response } from "express";
+import { config } from "dotenv";
+config();
+import express, { Request, Response, NextFunction } from "express";
 import path from "path";
+import prisma from "./config/database";
+import { securityMiddleware } from "./config/security";
+import { SERVER_CONFIG } from "./config/server";
+import healthRoutes from "./routes/health.routes";
+import authRoutes from "./routes/auth.routes";
+import { errorHandler, notFoundHandler } from "./middleware/error-handler.middleware";
+import { logger } from "./utils/logger";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
+// Security foundation
+app.use(securityMiddleware.helmet);
+app.use(securityMiddleware.cors);
+app.use(securityMiddleware.rateLimit);
+
+// Core middleware
+app.use(express.json({ limit: "10kb" }));
+app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "../public")));
 
-app.get("/api/health", (_req: Request, res: Response) => {
-  res.json({ status: "ok", service: "zamana-ai", timestamp: new Date().toISOString() });
-});
+// Health check (no auth required)
+app.use("/api/health", healthRoutes);
 
-app.listen(PORT, () => {
-  console.log(`Zamana AI running on port ${PORT}`);
+// API routes (auth protected routes registered here)
+app.use("/api/auth", authRoutes);
+
+// 404 handler
+app.use(notFoundHandler);
+
+// Centralized error handler
+app.use(errorHandler);
+
+export async function start() {
+  try {
+    await prisma.$connect();
+    logger.info("Database connected", { provider: "postgresql" });
+
+    const server = app.listen(SERVER_CONFIG.port, () => {
+      logger.info(`Zamana AI running on port ${SERVER_CONFIG.port}`, { env: SERVER_CONFIG.nodeEnv });
+    });
+    return server;
+  } catch (err) {
+    logger.error("Failed to start server", { error: err instanceof Error ? err.message : "unknown" });
+    process.exit(1);
+  }
+}
+
+// Graceful shutdown
+process.on("SIGTERM", async () => {
+  await prisma.$disconnect();
+  logger.info("SIGTERM received, database disconnected");
+  process.exit(0);
 });
 
 export default app;

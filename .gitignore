@@ -8,3 +8,7 @@ dist/
 coverage/
 npm-debug.log*
 
+.env.local
+.env.*.local
+*.swp
+*.swo
