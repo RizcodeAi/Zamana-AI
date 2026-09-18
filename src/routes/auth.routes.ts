@@ -2,6 +2,7 @@ import { Router } from "express";
 import { register, login } from "../controllers/auth.controller";
 import { validateRegister, validateLogin } from "../utils/validators";
 import { RegisterInput, LoginInput } from "../types/auth.types";
+import { authenticate } from "../middleware/auth.middleware";
 
 const router = Router();
 
@@ -25,6 +26,17 @@ router.post("/login", async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+// Protected endpoint for JWT verification testing
+router.get("/me", (req, res, next) => {
+  try {
+    authenticate(req as any, res, next);
+  } catch (err) {
+    next(err);
+  }
+}, (_req, res) => {
+  res.json({ success: true, data: { userId: (_req as any).userId } });
 });
 
 export default router;

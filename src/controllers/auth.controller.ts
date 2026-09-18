@@ -4,7 +4,7 @@ import prisma from "../config/database";
 import { JWT_CONFIG } from "../config/jwt";
 import { validateRegister, validateLogin } from "../utils/validators";
 import { RegisterInput, LoginInput, AuthTokens } from "../types/auth.types";
-import { ConflictError, ValidationError } from "../types/error.types";
+import { ConflictError, ValidationError, AuthenticationError } from "../types/error.types";
 import { logger } from "../utils/logger";
 
 const SALT_ROUNDS = 12;
@@ -45,10 +45,10 @@ export const login = async (input: LoginInput) => {
   validateLogin(input);
 
   const user = await prisma.user.findUnique({ where: { email: input.email } });
-  if (!user) throw new ValidationError("Invalid email or password");
+  if (!user) throw new AuthenticationError("Invalid email or password");
 
   const validPassword = await bcrypt.compare(input.password, user.passwordHash);
-  if (!validPassword) throw new ValidationError("Invalid email or password");
+  if (!validPassword) throw new AuthenticationError("Invalid email or password");
 
   const tokens = await generateTokens(user.id);
   logger.info("User logged in", { userId: user.id, email: user.email });

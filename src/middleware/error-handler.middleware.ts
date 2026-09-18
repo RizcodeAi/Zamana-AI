@@ -6,6 +6,15 @@ import { sanitizeError } from "../utils/logger";
 export const errorHandler = (err: Error, _req: Request, res: Response, _next: NextFunction) => {
   logger.error("Unhandled error", { error: err.message, stack: err.stack });
 
+  if (err instanceof SyntaxError && "body" in err) {
+    return res.status(400).json({
+      error: "BadRequest",
+      message: "Invalid JSON payload",
+      statusCode: 400,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
       error: err.constructor.name,

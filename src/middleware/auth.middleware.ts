@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { JWT_CONFIG } from "../config/jwt";
 import { AuthenticationError } from "../types/error.types";
+import { AuthorizationError } from "../types/error.types";
 import { logger } from "../utils/logger";
 
 export interface AuthenticatedRequest extends Request {
@@ -20,8 +21,11 @@ export const authenticate = (req: AuthenticatedRequest, _res: Response, next: Ne
     req.userId = decoded.userId;
     logger.debug("JWT verified", { userId: decoded.userId });
     next();
-  } catch (err) {
+  } catch (err: any) {
     logger.warn("Invalid JWT", { error: err instanceof Error ? err.message : "unknown" });
-    throw new AuthenticationError("Invalid or expired token");
+    if (err.name === "TokenExpiredError") {
+      throw new AuthenticationError("Token has expired");
+    }
+    throw new AuthorizationError("Invalid or corrupted token");
   }
 };
