@@ -1,5 +1,9 @@
 import { config } from "dotenv";
-config();
+if (process.env.NODE_ENV === "test") {
+  config({ path: ".env.test", override: true });
+} else {
+  config();
+}
 import express, { Request, Response, NextFunction } from "express";
 import path from "path";
 import prisma from "./config/database";

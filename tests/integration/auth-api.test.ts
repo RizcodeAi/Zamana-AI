@@ -7,6 +7,9 @@
 // Never touches production data — uses unique email suffixes.
 // ============================================================
 
+import { config } from "dotenv";
+config({ path: "../../../.env.test", override: true });
+
 import { describe, it, before, after } from "node:test";
 import assert from "node:assert";
 import http from "http";

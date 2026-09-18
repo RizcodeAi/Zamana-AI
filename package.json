@@ -5,10 +5,14 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc --project tsconfig.json",
-    "build:tests": "npx tsc --ignoreConfig --outDir dist --declaration false --module commonjs --target ES2022 --esModuleInterop --skipLibCheck --moduleResolution bundler --lib ES2022 --types node tests/auth.test.ts tests/health.test.ts tests/security.test.ts tests/error-handler.test.ts tests/integration/auth-api.test.ts src/index.ts src/config/database.ts src/config/jwt.ts src/config/security.ts src/config/server.ts src/controllers/auth.controller.ts src/middleware/auth.middleware.ts src/middleware/error-handler.middleware.ts src/routes/auth.routes.ts src/routes/health.routes.ts src/types/api.types.ts src/types/auth.types.ts src/types/error.types.ts src/utils/logger.ts src/utils/validators.ts",
+    "build:tests": "npx tsc --ignoreConfig --outDir dist --declaration false --module node20 --target ES2022 --esModuleInterop --skipLibCheck --moduleResolution node16 --lib ES2022 --types node tests/auth.test.ts tests/health.test.ts tests/security.test.ts tests/error-handler.test.ts tests/integration/auth-api.test.ts src/index.ts src/config/database.ts src/config/jwt.ts src/config/security.ts src/config/server.ts src/controllers/auth.controller.ts src/middleware/auth.middleware.ts src/middleware/error-handler.middleware.ts src/routes/auth.routes.ts src/routes/health.routes.ts src/types/api.types.ts src/types/auth.types.ts src/types/error.types.ts src/utils/logger.ts src/utils/validators.ts",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
     "test": "node --test dist/tests/*.test.js dist/tests/integration/*.test.js",
+    "test:integration": "dotenv -e .env.test -- node --test dist/tests/integration/*.test.js",
+    "db:test:migrate": "npx prisma migrate deploy --schema=prisma/schema.prisma",
+    "db:test:setup": "node -e \"const { config } = require('dotenv'); config({ path: '.env.test' }); require('./src/config/database');\"",
+    "db:test:reset": "node -e \"const { PrismaClient } = require('@prisma/client'); const { PrismaPg } = require('@prisma/adapter-pg'); const { config } = require('dotenv'); config({ path: '.env.test' }); const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL }); const prisma = new PrismaClient({ adapter }); prisma.$connect().then(async () => { await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS \"User\" CASCADE'); await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS \"Organization\" CASCADE'); await prisma.$disconnect(); })\"",
     "lint": "eslint src/"
   },
   "keywords": [

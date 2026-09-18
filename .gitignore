@@ -13,6 +13,7 @@ node_modules/
 .env
 .env.*
 !.env.example
+!.env.test
 
 # Local secret/config files
 *.pem
@@ -109,6 +110,9 @@ storage/
 # Docker local overrides
 # ------------------------------------------------------------
 docker-compose.override.yml
+
+# Test Docker compose
+!docker-compose.test.yml
 
 # ------------------------------------------------------------
 # Local configuration
