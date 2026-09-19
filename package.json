@@ -9,10 +9,10 @@
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
     "test": "node --test dist/tests/*.test.js dist/tests/integration/*.test.js",
-    "test:integration": "dotenv -e .env.test -- node --test dist/tests/integration/*.test.js",
-    "db:test:migrate": "npx prisma migrate deploy --schema=prisma/schema.prisma",
-    "db:test:setup": "node -e \"const { config } = require('dotenv'); config({ path: '.env.test' }); require('./src/config/database');\"",
-    "db:test:reset": "node -e \"const { PrismaClient } = require('@prisma/client'); const { PrismaPg } = require('@prisma/adapter-pg'); const { config } = require('dotenv'); config({ path: '.env.test' }); const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL }); const prisma = new PrismaClient({ adapter }); prisma.$connect().then(async () => { await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS \"User\" CASCADE'); await prisma.$executeRawUnsafe('DROP TABLE IF EXISTS \"Organization\" CASCADE'); await prisma.$disconnect(); })\"",
+    "test:integration": "node -e \"require('dotenv').config({path:'.env.test',override:true});require('child_process').execSync('node --test dist/tests/integration/*.test.js',{stdio:'inherit'})\"",
+    "db:test:migrate": "node -e \"require('dotenv').config({path:'.env.test',override:true});require('child_process').execSync('npx prisma migrate deploy --schema=prisma/schema.prisma --config=prisma/prisma.config.ts',{stdio:'inherit'})\"",
+    "db:test:setup": "node -e \"require('dotenv').config({path:'.env.test',override:true});require('child_process').execSync('npx prisma migrate deploy --schema=prisma/schema.prisma --config=prisma/prisma.config.ts',{stdio:'inherit'})\"",
+    "db:test:reset": "node -e \"require('dotenv').config({path:'.env.test',override:true});require('child_process').execSync('npx prisma migrate reset --schema=prisma/schema.prisma --config=prisma/prisma.config.ts --force',{stdio:'inherit'})\"",
     "lint": "eslint src/"
   },
   "keywords": [
